@@ -1,10 +1,10 @@
 // cp932_test_runner.cpp
 //
-// CP932 出力を UTF-8 に変換して ctest に渡すテストランナー
-// Usage: cp932_test_runner.exe <test_exe> [args...]
+// ANSI コードページ出力を UTF-8 に変換して ctest に渡すテストランナー
+// Usage: cp932_test_runner.exe [--codepage N] <test_exe> [args...]
 //
-// test_exe の stdout/stderr を CP932 としてキャプチャし、UTF-8 に変換して
-// 自身の stdout/stderr へ WriteFile で出力する。
+// test_exe の stdout/stderr を指定コードページ（デフォルト: GetACP()）として
+// キャプチャし、UTF-8 に変換して自身の stdout/stderr へ WriteFile で出力する。
 // test_exe の終了コードをそのまま返す。
 
 #define WIN32_LEAN_AND_MEAN
@@ -13,21 +13,21 @@
 #include <vector>
 #include <thread>
 
-// CP932 バイト列を UTF-8 バイト列に変換する
-static std::string cp932_to_utf8(const std::vector<BYTE>& bytes)
+// バイト列を指定コードページから UTF-8 に変換する
+static std::string to_utf8(const std::vector<BYTE>& bytes, UINT codepage)
 {
     if (bytes.empty())
         return {};
 
-    // CP932 -> UTF-16
-    int wlen = MultiByteToWideChar(932, 0,
+    // codepage -> UTF-16
+    int wlen = MultiByteToWideChar(codepage, 0,
         reinterpret_cast<const char*>(bytes.data()),
         static_cast<int>(bytes.size()),
         nullptr, 0);
     if (wlen <= 0)
         return {};
     std::wstring wstr(wlen, L'\0');
-    MultiByteToWideChar(932, 0,
+    MultiByteToWideChar(codepage, 0,
         reinterpret_cast<const char*>(bytes.data()),
         static_cast<int>(bytes.size()),
         wstr.data(), wlen);
@@ -58,12 +58,12 @@ static std::vector<BYTE> read_all(HANDLE h)
     return buf;
 }
 
-// argv[1..] をスペース区切りのコマンドライン文字列に結合（引数をクォート）
-static std::wstring build_command_line(int argc, wchar_t* argv[])
+// argv[start..] をスペース区切りのコマンドライン文字列に結合（引数をクォート）
+static std::wstring build_command_line(int argc, wchar_t* argv[], int start)
 {
     std::wstring cmd;
-    for (int i = 1; i < argc; ++i) {
-        if (i > 1)
+    for (int i = start; i < argc; ++i) {
+        if (i > start)
             cmd += L' ';
         std::wstring arg = argv[i];
         bool need_quote = arg.empty()
@@ -93,11 +93,24 @@ static void write_all(HANDLE h, const std::string& s)
 
 int wmain(int argc, wchar_t* argv[])
 {
-    if (argc < 2) {
-        const char msg[] = "Usage: cp932_test_runner.exe <test_exe> [args...]\r\n";
+    UINT codepage = GetACP();
+    int exe_arg = 1;
+
+    if (argc >= 3 && wcscmp(argv[1], L"--codepage") == 0) {
+        codepage = static_cast<UINT>(_wtoi(argv[2]));
+        if (codepage == 0) {
+            const char msg[] = "cp932_test_runner: --codepage: invalid value\r\n";
+            DWORD written;
+            WriteFile(GetStdHandle(STD_ERROR_HANDLE), msg, sizeof(msg) - 1, &written, nullptr);
+            return 1;
+        }
+        exe_arg = 3;
+    }
+
+    if (argc <= exe_arg) {
+        const char msg[] = "Usage: cp932_test_runner.exe [--codepage N] <test_exe> [args...]\r\n";
         DWORD written;
-        WriteFile(GetStdHandle(STD_ERROR_HANDLE),
-            msg, sizeof(msg) - 1, &written, nullptr);
+        WriteFile(GetStdHandle(STD_ERROR_HANDLE), msg, sizeof(msg) - 1, &written, nullptr);
         return 1;
     }
 
@@ -125,7 +138,7 @@ int wmain(int argc, wchar_t* argv[])
     si.hStdOutput = hOutWrite;
     si.hStdError  = hErrWrite;
 
-    std::wstring cmd = build_command_line(argc, argv);
+    std::wstring cmd = build_command_line(argc, argv, exe_arg);
     PROCESS_INFORMATION pi = {};
     BOOL ok = CreateProcessW(nullptr, cmd.data(),
         nullptr, nullptr, TRUE, 0, nullptr, nullptr, &si, &pi);
@@ -152,10 +165,10 @@ int wmain(int argc, wchar_t* argv[])
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
 
-    // CP932 -> UTF-8 変換して WriteFile 出力
+    // 指定コードページ -> UTF-8 変換して WriteFile 出力
     // （C ランタイムの stdout/stderr は使わない。エンコーディング変換を回避するため）
-    write_all(GetStdHandle(STD_OUTPUT_HANDLE), cp932_to_utf8(out_bytes));
-    write_all(GetStdHandle(STD_ERROR_HANDLE),  cp932_to_utf8(err_bytes));
+    write_all(GetStdHandle(STD_OUTPUT_HANDLE), to_utf8(out_bytes, codepage));
+    write_all(GetStdHandle(STD_ERROR_HANDLE),  to_utf8(err_bytes, codepage));
 
     return static_cast<int>(exit_code);
 }

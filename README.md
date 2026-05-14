@@ -2,7 +2,7 @@
 
 > **English:** [README-EN.md](README-EN.md) is also available.
 
-Windows の CTest で CP932 出力するテストプログラムを正しく扱うためのテストランナーラッパーです。
+Windows の CTest で ANSI コードページ出力するテストプログラムを正しく扱うためのテストランナーラッパーです。CP932（日本語）をはじめ、CP936（簡体字中国語）・CP949（韓国語）など任意の ANSI コードページに対応します。
 
 ---
 
@@ -11,10 +11,10 @@ Windows の CTest で CP932 出力するテストプログラムを正しく扱�
 次の条件に当てはまるプロジェクトで使用します。
 
 - **Windows** 上で CMake + CTest を使っている
-- テストプログラムが **CP932（Windows-31J / Shift_JIS）** でテキストを出力する
-- テスト出力に **日本語が含まれており、文字化けなく表示したい**
+- テストプログラムが **ANSI コードページ**（CP932・CP936・CP949 など）でテキストを出力する
+- テスト出力に **マルチバイト文字が含まれており、文字化けなく表示したい**
 
-CP932 出力が残っているのは、ほとんどの場合、UTF-8 移行が完了していないレガシーな日本語ソフトウェアです。
+ANSI コードページ出力が残っているのは、ほとんどの場合、UTF-8 移行が完了していないレガシーなソフトウェアです。
 
 ---
 
@@ -48,12 +48,12 @@ CP932 の 2 バイト文字はリードバイト（0x81–0x9F, 0xE0–0xFC）�
 `cp932_test_runner.exe` がテストプロセスをラップします。
 
 ```
-テストプロセス (stdout/stderr: CP932)
+テストプロセス (stdout/stderr: ANSI コードページ)
   → cp932_test_runner がパイプでキャプチャ（2 スレッドで並行読み取り）
-  → MultiByteToWideChar(CP 932) + WideCharToMultiByte(CP_UTF8) で変換
+  → MultiByteToWideChar(コードページ) + WideCharToMultiByte(CP_UTF8) で変換
   → WriteFile で UTF-8 を自身の stdout/stderr へ出力
   → CTest が UTF-8 バイト列をそのまま通過させる
-  → 文字化けなしに正しい日本語が表示される
+  → 文字化けなしに正しいテキストが表示される
 ```
 
 stdout と stderr を 2 スレッドで並行読み取りすることで、バッファが満杯になったときのデッドロックを防ぎます。出力には `WriteFile` を使用し、C ランタイムによるエンコーディング変換を回避します。
@@ -96,6 +96,30 @@ cmake --build build
 
 ## 使用方法
 
+### コードページの指定
+
+`--codepage N` オプションで変換に使うコードページを指定できます。省略した場合はシステムの ANSI コードページ（`GetACP()`）が使われます。
+
+| コードページ | 言語 |
+|---|---|
+| 932 | 日本語（CP932 / Windows-31J） |
+| 936 | 簡体字中国語（GBK） |
+| 949 | 韓国語（EUC-KR 互換） |
+| 950 | 繁体字中国語（Big5） |
+| 1252 | 西欧（Windows-1252） |
+
+```cmake
+# CP932 を明示指定
+add_test(NAME my_test
+    COMMAND "$<TARGET_FILE:cp932_test_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
+)
+
+# システムの ANSI コードページを使う（省略時）
+add_test(NAME my_test
+    COMMAND "$<TARGET_FILE:cp932_test_runner>" "$<TARGET_FILE:my_test_exe>"
+)
+```
+
 ### CMake FetchContent で組み込む（推奨）
 
 自分のプロジェクトの `CMakeLists.txt` に以下を追加します。
@@ -111,9 +135,8 @@ FetchContent_MakeAvailable(ctest_cp932_runner)
 
 enable_testing()
 
-# CP932 出力するテストを cp932_test_runner でラップする
 add_test(NAME my_test
-    COMMAND "$<TARGET_FILE:cp932_test_runner>" "$<TARGET_FILE:my_test_exe>"
+    COMMAND "$<TARGET_FILE:cp932_test_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
 )
 ```
 
@@ -123,7 +146,7 @@ add_test(NAME my_test
 enable_testing()
 
 add_test(NAME my_test
-    COMMAND "C:/tools/cp932_test_runner.exe" "$<TARGET_FILE:my_test_exe>"
+    COMMAND "C:/tools/cp932_test_runner.exe" --codepage 932 "$<TARGET_FILE:my_test_exe>"
 )
 ```
 
@@ -134,6 +157,7 @@ add_test(NAME my_test
 ```cmake
 add_test(NAME my_test
     COMMAND "$<TARGET_FILE:cp932_test_runner>"
+        --codepage 932
         "$<TARGET_FILE:my_test_exe>"
         --input "path with spaces/data.txt"
         --verbose

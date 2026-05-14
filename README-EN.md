@@ -2,7 +2,7 @@
 
 > **Japanese:** [README.md](README.md) is also available.
 
-A test runner wrapper for CTest on Windows that converts CP932 output to UTF-8.
+A test runner wrapper for CTest on Windows that converts ANSI code page output to UTF-8. Supports CP932 (Japanese) and any other Windows ANSI code page such as CP936 (Simplified Chinese) or CP949 (Korean).
 
 ---
 
@@ -11,10 +11,10 @@ A test runner wrapper for CTest on Windows that converts CP932 output to UTF-8.
 Use this tool if all of the following apply to your project:
 
 - You are running CMake + CTest on **Windows**
-- Your test executables output text encoded in **CP932 (Windows-31J / Shift_JIS)**
-- The test output contains **Japanese text** that you want displayed correctly
+- Your test executables output text encoded in an **ANSI code page** (CP932, CP936, CP949, etc.)
+- The test output contains **multibyte characters** that you want displayed correctly
 
-CP932 output typically occurs in legacy Japanese software that has not yet been migrated to UTF-8.
+ANSI code page output typically occurs in legacy software that has not yet been migrated to UTF-8.
 
 ---
 
@@ -48,12 +48,12 @@ The syntax of the command is incorrect.
 `cp932_test_runner.exe` wraps the test process:
 
 ```
-Test process (stdout/stderr: CP932)
+Test process (stdout/stderr: ANSI code page)
   → cp932_test_runner captures via pipes (two threads reading concurrently)
-  → MultiByteToWideChar(CP 932) + WideCharToMultiByte(CP_UTF8) conversion
+  → MultiByteToWideChar(code page) + WideCharToMultiByte(CP_UTF8) conversion
   → WriteFile writes UTF-8 to its own stdout/stderr
   → CTest passes the UTF-8 bytes through unchanged
-  → Japanese text is displayed correctly
+  → Text is displayed correctly
 ```
 
 Both stdout and stderr are read on separate threads to prevent deadlocks when buffers fill up. Output uses `WriteFile` directly, bypassing any encoding conversion performed by the C runtime.
@@ -96,6 +96,30 @@ The output is `build\cp932_test_runner.exe`.
 
 ## Usage
 
+### Specifying the Code Page
+
+Use the `--codepage N` option to specify the code page for conversion. If omitted, the system's ANSI code page (`GetACP()`) is used automatically.
+
+| Code Page | Language |
+|---|---|
+| 932 | Japanese (CP932 / Windows-31J) |
+| 936 | Simplified Chinese (GBK) |
+| 949 | Korean (EUC-KR compatible) |
+| 950 | Traditional Chinese (Big5) |
+| 1252 | Western European (Windows-1252) |
+
+```cmake
+# Explicitly specify CP932
+add_test(NAME my_test
+    COMMAND "$<TARGET_FILE:cp932_test_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
+)
+
+# Use the system ANSI code page (omitted)
+add_test(NAME my_test
+    COMMAND "$<TARGET_FILE:cp932_test_runner>" "$<TARGET_FILE:my_test_exe>"
+)
+```
+
 ### Via CMake FetchContent (recommended)
 
 Add the following to your project's `CMakeLists.txt`:
@@ -111,9 +135,8 @@ FetchContent_MakeAvailable(ctest_cp932_runner)
 
 enable_testing()
 
-# Wrap a CP932-output test executable with cp932_test_runner
 add_test(NAME my_test
-    COMMAND "$<TARGET_FILE:cp932_test_runner>" "$<TARGET_FILE:my_test_exe>"
+    COMMAND "$<TARGET_FILE:cp932_test_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
 )
 ```
 
@@ -123,7 +146,7 @@ add_test(NAME my_test
 enable_testing()
 
 add_test(NAME my_test
-    COMMAND "C:/tools/cp932_test_runner.exe" "$<TARGET_FILE:my_test_exe>"
+    COMMAND "C:/tools/cp932_test_runner.exe" --codepage 932 "$<TARGET_FILE:my_test_exe>"
 )
 ```
 
@@ -134,6 +157,7 @@ Arguments are forwarded to the test process as-is. Arguments containing spaces a
 ```cmake
 add_test(NAME my_test
     COMMAND "$<TARGET_FILE:cp932_test_runner>"
+        --codepage 932
         "$<TARGET_FILE:my_test_exe>"
         --input "path with spaces/data.txt"
         --verbose
