@@ -4,6 +4,8 @@
 
 A test runner wrapper for CTest on Windows that converts ANSI code page output to UTF-8. Supports CP932 (Japanese) and any other Windows ANSI code page such as CP936 (Simplified Chinese) or CP949 (Korean).
 
+> **About the name:** The executable is named `cp932_test_runner.exe`, but any code page can be specified via the `--codepage` option. CP932 — the ANSI code page on Japanese Windows — is the primary use case, and testing legacy Japanese software is the most typical scenario.
+
 ---
 
 ## When You Need This
