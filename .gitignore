@@ -1,0 +1,6 @@
+# .gitignore
+*~
+\#*
+build/
+.claude/settings.local.json
+.claude/todos/
