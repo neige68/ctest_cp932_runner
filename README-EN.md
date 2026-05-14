@@ -22,12 +22,18 @@ CP932 output typically occurs in legacy Japanese software that has not yet been 
 
 ### How CTest Handles Encoding
 
-CTest (CMake 3.20+) processes test output as **UTF-8 byte sequences**. The lead bytes of CP932 multibyte characters (0x80–0xFF) are invalid in UTF-8, so CTest replaces them with **U+FFFD (`\xEF\xBF\xBD`)**. As a result, all Japanese text in the test output turns into `?`.
+CTest (CMake 3.20+) processes test output as **UTF-8 byte sequences**. Valid UTF-8 sequences (including ASCII) pass through unchanged, but **byte sequences that are invalid UTF-8 are replaced with U+FFFD (`\xEF\xBF\xBD`)**. CP932 multibyte characters are invalid UTF-8, so Japanese text encoded in CP932 becomes garbled.
+
+CP932 two-byte characters consist of a lead byte (0x81–0x9F or 0xE0–0xFC) and a trail byte (0x40–0x7E or 0x80–0xFC). Trail bytes in the range 0x40–0x7E fall within the ASCII range and pass through unchanged. The result is a mix of U+FFFD replacement characters and stray ASCII fragments.
+
+Actual output when `stdout: 日本語テスト出力` is written in CP932:
 
 ```
-Expected: [ERROR] ファイルが見つかりません: config.txt
-Actual:   [ERROR] ??????????????????????: config.txt
+Expected: stdout: 日本語テスト出力
+Actual:   stdout: ���{��e�X�g�o��
 ```
+
+(`?` = U+FFFD replacement character; `{`, `e`, `X`, `g`, `o` are CP932 trail bytes that passed through as ASCII)
 
 ### Why `cmd.exe /C` Does Not Work in `add_test`
 
