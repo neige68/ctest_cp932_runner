@@ -68,7 +68,7 @@ Both stdout and stderr are read on separate threads to prevent deadlocks when bu
 |---|---|
 | Windows | 10 or later |
 | CMake | 3.20 or later |
-| Visual Studio | 2019 or 2022 (MSVC) |
+| Visual Studio | 2022 or 2026 (MSVC) |
 
 MinGW-w64 can also be used, but testing has been done with MSVC.
 

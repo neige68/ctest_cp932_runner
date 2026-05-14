@@ -68,7 +68,7 @@ stdout と stderr を 2 スレッドで並行読み取りすることで、バ�
 |---|---|
 | Windows | 10 以降 |
 | CMake | 3.20 以上 |
-| Visual Studio | 2019 または 2022（MSVC コンパイラ）|
+| Visual Studio | 2022 または 2026（MSVC コンパイラ）|
 
 MinGW-w64 でもビルド可能ですが、動作確認は MSVC で行っています。
 
