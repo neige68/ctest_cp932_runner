@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT
 //
 // ANSI コードページ出力を UTF-8 に変換して ctest に渡すテストランナー
-// Usage: cp932_test_runner.exe [--codepage N] <test_exe> [args...]
+// Usage: ctest_cp932_runner.exe [--codepage N] <test_exe> [args...]
 //
 // test_exe の stdout/stderr を指定コードページ（デフォルト: GetACP()）として
 // キャプチャし、UTF-8 に変換して自身の stdout/stderr へ WriteFile で出力する。
@@ -103,7 +103,7 @@ int wmain(int argc, wchar_t* argv[])
     if (argc >= 3 && wcscmp(argv[1], L"--codepage") == 0) {
         codepage = static_cast<UINT>(_wtoi(argv[2]));
         if (codepage == 0) {
-            const char msg[] = "cp932_test_runner: --codepage: invalid value\r\n";
+            const char msg[] = "ctest_cp932_runner: --codepage: invalid value\r\n";
             DWORD written;
             WriteFile(GetStdHandle(STD_ERROR_HANDLE), msg, sizeof(msg) - 1, &written, nullptr);
             return 1;
@@ -112,7 +112,7 @@ int wmain(int argc, wchar_t* argv[])
     }
 
     if (argc <= exe_arg) {
-        const char msg[] = "Usage: cp932_test_runner.exe [--codepage N] <test_exe> [args...]\r\n";
+        const char msg[] = "Usage: ctest_cp932_runner.exe [--codepage N] <test_exe> [args...]\r\n";
         DWORD written;
         WriteFile(GetStdHandle(STD_ERROR_HANDLE), msg, sizeof(msg) - 1, &written, nullptr);
         return 1;
