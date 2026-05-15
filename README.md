@@ -129,7 +129,7 @@ include(FetchContent)
 FetchContent_Declare(
     ctest_cp932_runner
     GIT_REPOSITORY https://github.com/neige68/ctest_cp932_runner
-    GIT_TAG main
+    GIT_TAG v1.0.0
 )
 FetchContent_MakeAvailable(ctest_cp932_runner)
 
