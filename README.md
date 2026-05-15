@@ -4,8 +4,6 @@
 
 Windows の CTest で ANSI コードページ出力するテストプログラムを正しく扱うためのテストランナーラッパーです。CP932（日本語）をはじめ、CP936（簡体字中国語）・CP949（韓国語）など任意の ANSI コードページに対応します。
 
-> **ツール名について:** 実行ファイル名は `cp932_test_runner.exe` のままですが、`--codepage` オプションで任意のコードページを指定できます。名前が示す CP932（日本語 Windows の ANSI コードページ）が主な用途であり、レガシーな日本語ソフトウェアのテストが最も典型的なユースケースです。
-
 ---
 
 ## このツールが必要な場合
@@ -47,11 +45,11 @@ CP932 の 2 バイト文字はリードバイト（0x81–0x9F, 0xE0–0xFC）�
 
 ### このツールの解決策
 
-`cp932_test_runner.exe` がテストプロセスをラップします。
+`ctest_cp932_runner.exe` がテストプロセスをラップします。
 
 ```
 テストプロセス (stdout/stderr: ANSI コードページ)
-  → cp932_test_runner がパイプでキャプチャ（2 スレッドで並行読み取り）
+  → ctest_cp932_runner がパイプでキャプチャ（2 スレッドで並行読み取り）
   → MultiByteToWideChar(コードページ) + WideCharToMultiByte(CP_UTF8) で変換
   → WriteFile で UTF-8 を自身の stdout/stderr へ出力
   → CTest が UTF-8 バイト列をそのまま通過させる
@@ -83,7 +81,7 @@ cmake -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release
 ```
 
-32 ビット版が必要な場合は `-A Win32` に変更します。ビルド後に `build\Release\cp932_test_runner.exe` が生成されます。
+32 ビット版が必要な場合は `-A Win32` に変更します。ビルド後に `build\Release\ctest_cp932_runner.exe` が生成されます。
 
 ### Ninja を使う場合（Developer Command Prompt 内で）
 
@@ -92,7 +90,7 @@ cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-ビルド後に `build\cp932_test_runner.exe` が生成されます。
+ビルド後に `build\ctest_cp932_runner.exe` が生成されます。
 
 ---
 
@@ -113,12 +111,12 @@ cmake --build build
 ```cmake
 # CP932 を明示指定
 add_test(NAME my_test
-    COMMAND "$<TARGET_FILE:cp932_test_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
+    COMMAND "$<TARGET_FILE:ctest_cp932_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
 )
 
 # システムの ANSI コードページを使う（省略時）
 add_test(NAME my_test
-    COMMAND "$<TARGET_FILE:cp932_test_runner>" "$<TARGET_FILE:my_test_exe>"
+    COMMAND "$<TARGET_FILE:ctest_cp932_runner>" "$<TARGET_FILE:my_test_exe>"
 )
 ```
 
@@ -138,7 +136,7 @@ FetchContent_MakeAvailable(ctest_cp932_runner)
 enable_testing()
 
 add_test(NAME my_test
-    COMMAND "$<TARGET_FILE:cp932_test_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
+    COMMAND "$<TARGET_FILE:ctest_cp932_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
 )
 ```
 
@@ -148,7 +146,7 @@ add_test(NAME my_test
 enable_testing()
 
 add_test(NAME my_test
-    COMMAND "C:/tools/cp932_test_runner.exe" --codepage 932 "$<TARGET_FILE:my_test_exe>"
+    COMMAND "C:/tools/ctest_cp932_runner.exe" --codepage 932 "$<TARGET_FILE:my_test_exe>"
 )
 ```
 
@@ -158,7 +156,7 @@ add_test(NAME my_test
 
 ```cmake
 add_test(NAME my_test
-    COMMAND "$<TARGET_FILE:cp932_test_runner>"
+    COMMAND "$<TARGET_FILE:ctest_cp932_runner>"
         --codepage 932
         "$<TARGET_FILE:my_test_exe>"
         --input "path with spaces/data.txt"

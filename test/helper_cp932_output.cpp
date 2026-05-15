@@ -1,7 +1,7 @@
 // helper_cp932_output.cpp
 //
 // CP932 バイト列を stdout/stderr に出力するテストヘルパー
-// cp932_test_runner のテスト用。ソースは UTF-8 で書き、
+// ctest_cp932_runner のテスト用。ソースは UTF-8 で書き、
 // WideCharToMultiByte で CP932 に変換して WriteFile で出力する。
 
 #define WIN32_LEAN_AND_MEAN

@@ -1,4 +1,4 @@
-// cp932_test_runner.cpp
+// ctest_cp932_runner.cpp
 //
 // Copyright (c) 2026 neige68
 // https://github.com/neige68/ctest_cp932_runner

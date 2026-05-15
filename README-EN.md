@@ -4,8 +4,6 @@
 
 A test runner wrapper for CTest on Windows that converts ANSI code page output to UTF-8. Supports CP932 (Japanese) and any other Windows ANSI code page such as CP936 (Simplified Chinese) or CP949 (Korean).
 
-> **About the name:** The executable is named `cp932_test_runner.exe`, but any code page can be specified via the `--codepage` option. CP932 — the ANSI code page on Japanese Windows — is the primary use case, and testing legacy Japanese software is the most typical scenario.
-
 ---
 
 ## When You Need This
@@ -47,11 +45,11 @@ The syntax of the command is incorrect.
 
 ### How This Tool Solves the Problem
 
-`cp932_test_runner.exe` wraps the test process:
+`ctest_cp932_runner.exe` wraps the test process:
 
 ```
 Test process (stdout/stderr: ANSI code page)
-  → cp932_test_runner captures via pipes (two threads reading concurrently)
+  → ctest_cp932_runner captures via pipes (two threads reading concurrently)
   → MultiByteToWideChar(code page) + WideCharToMultiByte(CP_UTF8) conversion
   → WriteFile writes UTF-8 to its own stdout/stderr
   → CTest passes the UTF-8 bytes through unchanged
@@ -83,7 +81,7 @@ cmake -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release
 ```
 
-For a 32-bit build, use `-A Win32`. The output is `build\Release\cp932_test_runner.exe`.
+For a 32-bit build, use `-A Win32`. The output is `build\Release\ctest_cp932_runner.exe`.
 
 ### With Ninja (inside a Developer Command Prompt)
 
@@ -92,7 +90,7 @@ cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-The output is `build\cp932_test_runner.exe`.
+The output is `build\ctest_cp932_runner.exe`.
 
 ---
 
@@ -113,12 +111,12 @@ Use the `--codepage N` option to specify the code page for conversion. If omitte
 ```cmake
 # Explicitly specify CP932
 add_test(NAME my_test
-    COMMAND "$<TARGET_FILE:cp932_test_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
+    COMMAND "$<TARGET_FILE:ctest_cp932_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
 )
 
 # Use the system ANSI code page (omitted)
 add_test(NAME my_test
-    COMMAND "$<TARGET_FILE:cp932_test_runner>" "$<TARGET_FILE:my_test_exe>"
+    COMMAND "$<TARGET_FILE:ctest_cp932_runner>" "$<TARGET_FILE:my_test_exe>"
 )
 ```
 
@@ -138,7 +136,7 @@ FetchContent_MakeAvailable(ctest_cp932_runner)
 enable_testing()
 
 add_test(NAME my_test
-    COMMAND "$<TARGET_FILE:cp932_test_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
+    COMMAND "$<TARGET_FILE:ctest_cp932_runner>" --codepage 932 "$<TARGET_FILE:my_test_exe>"
 )
 ```
 
@@ -148,7 +146,7 @@ add_test(NAME my_test
 enable_testing()
 
 add_test(NAME my_test
-    COMMAND "C:/tools/cp932_test_runner.exe" --codepage 932 "$<TARGET_FILE:my_test_exe>"
+    COMMAND "C:/tools/ctest_cp932_runner.exe" --codepage 932 "$<TARGET_FILE:my_test_exe>"
 )
 ```
 
@@ -158,7 +156,7 @@ Arguments are forwarded to the test process as-is. Arguments containing spaces a
 
 ```cmake
 add_test(NAME my_test
-    COMMAND "$<TARGET_FILE:cp932_test_runner>"
+    COMMAND "$<TARGET_FILE:ctest_cp932_runner>"
         --codepage 932
         "$<TARGET_FILE:my_test_exe>"
         --input "path with spaces/data.txt"

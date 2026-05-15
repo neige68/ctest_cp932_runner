@@ -27,7 +27,7 @@ pwsh.exe -NoProfile -Command "
 
 ## 構成
 
-- `cp932_test_runner.cpp` — メイン実装。Windows API のみ使用（C ランタイム依存なし）
+- `ctest_cp932_runner.cpp` — メイン実装。Windows API のみ使用（C ランタイム依存なし）
 - `CMakeLists.txt` — スタンドアロンプロジェクト（C++17 / MSVC `/utf-8`）
 - `README.md` — 日本語ドキュメント
 - `README-EN.md` — 英語ドキュメント
