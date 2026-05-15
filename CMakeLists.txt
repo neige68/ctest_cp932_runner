@@ -22,5 +22,7 @@ endif()
 
 install(TARGETS cp932_test_runner RUNTIME DESTINATION bin)
 
-enable_testing()
-add_subdirectory(test)
+if(PROJECT_IS_TOP_LEVEL)
+    enable_testing()
+    add_subdirectory(test)
+endif()
