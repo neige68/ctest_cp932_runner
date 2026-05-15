@@ -1,5 +1,9 @@
 # CMakeLists.txt
 #
+# Copyright (c) 2026 neige68
+# https://github.com/neige68/ctest_cp932_runner
+# SPDX-License-Identifier: MIT
+#
 # ctest_cp932_runner
 # Windows の CTest で CP932 出力するテストプログラムを UTF-8 に変換するランナー
 

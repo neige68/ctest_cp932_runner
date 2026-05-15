@@ -1,5 +1,9 @@
 # test/CMakeLists.txt
 #
+# Copyright (c) 2026 neige68
+# https://github.com/neige68/ctest_cp932_runner
+# SPDX-License-Identifier: MIT
+#
 # cp932_test_runner のテスト
 
 add_executable(helper_cp932_output helper_cp932_output.cpp)

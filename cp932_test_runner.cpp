@@ -1,5 +1,9 @@
 // cp932_test_runner.cpp
 //
+// Copyright (c) 2026 neige68
+// https://github.com/neige68/ctest_cp932_runner
+// SPDX-License-Identifier: MIT
+//
 // ANSI コードページ出力を UTF-8 に変換して ctest に渡すテストランナー
 // Usage: cp932_test_runner.exe [--codepage N] <test_exe> [args...]
 //
