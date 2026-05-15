@@ -74,6 +74,8 @@ MinGW-w64 でもビルド可能ですが、動作確認は MSVC で行ってい�
 
 ## ビルド方法
 
+> **注意:** CMake FetchContent で組み込む場合は個別のビルドは不要です。[FetchContent による組み込み](#cmake-fetchcontent-で組み込む推奨)を参照してください。
+
 ### Visual Studio Generator を使う場合
 
 ```bat

@@ -74,6 +74,8 @@ MinGW-w64 can also be used, but testing has been done with MSVC.
 
 ## Building
 
+> **Note:** If you integrate this tool via CMake FetchContent, you do not need to build it separately. See [Via CMake FetchContent (recommended)](#via-cmake-fetchcontent-recommended).
+
 ### With Visual Studio Generator
 
 ```bat
